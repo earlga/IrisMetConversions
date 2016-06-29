@@ -11,12 +11,12 @@ con = IMC.constants()
 #-------------------
 
 # POTENTIAL TEMPERATURE FROM TEMPERATURE
-def th2temp(TH, P=None, P0 = 1000.):
+def theta2temp(TH, P=None, P0 = 1000.):
 
     '''
     Convert potential temperature to temperature.
 
-    temperature = th2temp(TH, P=None, P0=1000.)
+    temperature = theta2temp(TH, P=None, P0=1000.)
 
     TH = cube of potential temperature.
     P (optional) = cube of pressure (only required if pressure is not a coordinate in TH)
@@ -56,12 +56,12 @@ def th2temp(TH, P=None, P0 = 1000.):
     return temperature
 
 # TEMPERATURE FROM POTENTIAL TEMPERATURE
-def temp2th(T, P=None, P0 = 1000.):
+def temp2theta(T, P=None, P0 = 1000.):
 
     '''
     Convert temperature to potential temperature.
 
-    theta = th2temp(T, p=None, p0=1000.)
+    theta = theta2temp(T, p=None, p0=1000.)
 
     T = cube of temperature.
     P (optional) = cube of pressure (only required if pressure is not a coordinate in T)
@@ -74,7 +74,7 @@ def temp2th(T, P=None, P0 = 1000.):
                             units='hPa')
 
     # pressure can be either a cube or a coordinate in theta
-    pressure = temp.coord(axis='Z') if P == None else P
+    pressure = T.coord(axis='Z') if P == None else P
 
     # units between pref and pressure must be consistent
     try:
@@ -102,6 +102,68 @@ def temp2th(T, P=None, P0 = 1000.):
 
     return theta
 
+def temp2tvirtual(T, MIXR=None, SH=None):
+    '''
+    Compute virtual temperature from temperature and humidity
+
+    TV = temp2tvirtual(T, MR)
+
+    T = cube of temperature
+    One of the following humidity variables MUST be set
+    MIXR = cube of water vapour mixing ratio
+    SH = cube of specific humidity
+    '''
+
+    # Check humidity has been set, and convert SH to MIXR if necessary
+    if MIXR:
+        pass
+    elif SH:
+        MIXR = sh2mixr(SH)
+    else:
+        print('Need to set either MIXR or SH. No humidity cube found.')
+        return
+
+    # force loading of data first, or the function doesn't work
+    T.data
+    MIXR.data
+
+    TV = T*((1 + (MIXR/(con.Rd/con.Rv)))/(1+MIXR))
+
+    TV.rename('virtual_temperature')
+
+    return TV
+
+def theta2thvirtual(TH, MIXR=None, SH=None):
+    '''
+    Compute virtual potential temperature from potential temperature and humidity
+
+    THV = theta2thvirtual(TH, MIXR=None, SH=None)
+
+    TH = cube of potential temperature
+    One of the following humidity variables MUST be set
+    MIXR = cube of water vapour mixing ratio
+    SH = cube of specific humidity
+    '''
+
+    # Check humidity has been set, and convert SH to MIXR if necessary
+    if MIXR:
+        pass
+    elif SH:
+        MIXR = sh2mixr(SH)
+    else:
+        print('Need to set either MIXR or SH. No humidity cube found.')
+        return
+
+    # force loading of data first, or the function doesn't work
+    TH.data
+    MIXR.data
+
+    THV = TH*((1 + (MIXR/(con.Rd/con.Rv)))/(1+MIXR))
+
+    THV.rename('virtual_potential_temperature')
+
+    return THV
+
 def rho(T, P=None, SH=0.):
     '''
     Compute air density of dry (default) or moist air.
@@ -110,13 +172,19 @@ def rho(T, P=None, SH=0.):
 
     T = cube of temperatures
     P (optional) = cube of pressure (only required if pressure is not a coordinate in T)
-    SH = cube or numpy array of specific humidity (in kg/kg if using numpy arrays)
+    SH = cube of specific humidity 
     '''
 
     # pressure can be either a cube or a coordinate in theta
     pressure = T.coord(axis='Z') if P == None else P
 
-    R = con.Rd * (1. - SH) + con.Rv*SH
+    # check pressure is really pressure
+    if not pressure.units.is_convertible('hPa'):
+            print 'The z coordinate in T not a pressure.'
+            print 'Please include optional parameter p'
+            return
+
+    R = ((-1.*SH + 1) * con.Rd)  + (SH*con.Rv)
 
     # have to invert the division because coord/cube is not possible (but cube/coord is ok)
     rho = ((T*R)/pressure)**-1
@@ -311,7 +379,7 @@ def sh2tdew(SH, T, P=None):
     mixr = IMC.convert.sh2mixr(SH)
     rh = IMC.convert.mixr2rh(mixr, T, P=pressure)
 
-    tdew = rh2tdew(rh, T, P=pressure)
+    tdew = rh2tdew(rh, T)
 
     return tdew
 
@@ -328,7 +396,7 @@ def mixr2tdew(MIXR, T, P=None):
 
     # pressure can be either a cube or a coordinate in theta
     if P == None:
-        pressure = SH.coord(axis='Z')
+        pressure = MIXR.coord(axis='Z')
         if not pressure.units.is_convertible('hPa'):
             print 'The z coordinate in Q is not a pressure.'
             print 'Please include optional parameter p'
@@ -337,7 +405,7 @@ def mixr2tdew(MIXR, T, P=None):
         pressure = P
 
     rh = mixr2rh(MIXR, T, P=pressure)
-    tdew = rh2tdew(rh, T, P=pressure)
+    tdew = rh2tdew(rh, T)
 
     return tdew
 
