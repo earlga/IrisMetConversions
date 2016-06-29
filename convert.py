@@ -3,6 +3,7 @@ import iris
 import numpy as np
 import iris.analysis.maths as im
 import IrisMetConversions as IMC
+import sys
 
 con = IMC.constants()
 
@@ -28,15 +29,8 @@ def theta2temp(TH, P=None, P0 = 1000.):
                             long_name='reference_pressure',
                             units='hPa')
 
-    # pressure can be either a cube or a coordinate in theta
-    pressure = TH.coord(axis='Z') if P == None else P
-
-    # units between pref and pressure must be consistent
-    try:
-        pref.convert_units(pressure.units)
-    except ValueError:
-        print('The z coordinate in theta is not a pressure.')
-        print('Please include optional parameter p')
+    pressure = _get_pressure(TH, P)
+    pref.convert_units(pressure.units)
 
     # if p is specified, use iris arithmetic
     if (type(pressure) is iris.cube.Cube):
@@ -73,16 +67,9 @@ def temp2theta(T, P=None, P0 = 1000.):
                             long_name='reference_pressure',
                             units='hPa')
 
-    # pressure can be either a cube or a coordinate in theta
-    pressure = T.coord(axis='Z') if P == None else P
-
-    # units between pref and pressure must be consistent
-    try:
-        pref.convert_units(pressure.units)
-    except ValueError:
-        print('The z coordinate in T is not a pressure.')
-        print('Please include optional parameter p')
-        
+    pressure = _get_pressure(T, P)
+    pref.convert_units(pressure.units)
+       
     # if p is specified, use iris arithmetic
     if (type(pressure) is iris.cube.Cube):
         theta = T * (pref * (pressure)**-1)** (con.Rd / con.cpd).data
@@ -175,15 +162,9 @@ def rho(T, P=None, SH=0.):
     SH = cube of specific humidity 
     '''
 
-    # pressure can be either a cube or a coordinate in theta
-    pressure = T.coord(axis='Z') if P == None else P
+    pressure = _get_pressure(T, P)
 
-    # check pressure is really pressure
-    if not pressure.units.is_convertible('hPa'):
-            print('The z coordinate in T not a pressure.')
-            print('Please include optional parameter p')
-            return
-
+    # water vapour contribution
     R = ((-1.*SH + 1) * con.Rd)  + (SH*con.Rv)
 
     # have to invert the division because coord/cube is not possible (but cube/coord is ok)
@@ -211,15 +192,7 @@ def rh2mixr(RH, T, P=None):
     P (optional) = cube of pressure (only required if pressure is not a coordinate in RH)
     '''
 
-    # pressure can be either a cube or a coordinate in theta
-    if P == None:
-        pressure = RH.coord(axis='Z')
-        if not pressure.units.is_convertible('hPa'):
-            print('The z coordinate in RH not a pressure.')
-            print('Please include optional parameter p')
-            return
-    else: 
-        pressure = P
+    pressure = _get_pressure(RH, P)
 
     es = esat(T)
     fact = RH * es
@@ -242,15 +215,7 @@ def mixr2rh(MIXR, T, P=None):
     P (optional) = cube of pressure (only required if pressure is not a coordinate in MIXR)
     '''
 
-    # pressure can be either a cube or a coordinate in theta
-    if P == None:
-        pressure = MIXR.coord(axis='Z')
-        if not pressure.units.is_convertible('hPa'):
-            print('The z coordinate in Q is not a pressure.')
-            print('Please include optional parameter p')
-            return
-    else: 
-        pressure = P
+    pressure = _get_pressure(MIXR, P)
 
     # calculation must be done in kg/kg, so store units first and convert.
     mixrunits = MIXR.units
@@ -316,7 +281,12 @@ def sh2mixr(SH):
 
 def rh2tdew(RH, T):
     '''
-    Calculate dew point temperature from relative humidity and temperature
+    Calculate dew point temperature from relative humidity and temperature 
+    according (nearly) to WMO standard procedure.
+    The parameters are slightly adapted however to fit the
+    formula of Bolton (1980).
+    (Code adapted from idl scripts written by Dominik Brunner)
+
 
     tdew = rh2tdew(T, RH)
 
@@ -365,16 +335,7 @@ def sh2tdew(SH, T, P=None):
     P (optional) = cube of pressure (only required if pressure is not a coordinate in SH)
     '''
 
-    # pressure can be either a cube or a coordinate in theta
-    if P == None:
-        pressure = SH.coord(axis='Z')
-        if not pressure.units.is_convertible('hPa'):
-            print('The z coordinate in Q is not a pressure.')
-            print('Please include optional parameter p')
-            return
-    else: 
-        pressure = P
-
+    pressure = _get_pressure(SH, P)
 
     mixr = IMC.convert.sh2mixr(SH)
     rh = IMC.convert.mixr2rh(mixr, T, P=pressure)
@@ -394,15 +355,7 @@ def mixr2tdew(MIXR, T, P=None):
     P (optional) = cube of pressure (only required if pressure is not a coordinate in MIXR)
     '''
 
-    # pressure can be either a cube or a coordinate in theta
-    if P == None:
-        pressure = MIXR.coord(axis='Z')
-        if not pressure.units.is_convertible('hPa'):
-            print('The z coordinate in Q is not a pressure.')
-            print('Please include optional parameter p')
-            return
-    else: 
-        pressure = P
+    pressure = _get_pressure(MIXR, P)
 
     rh = mixr2rh(MIXR, T, P=pressure)
     tdew = rh2tdew(rh, T)
@@ -446,6 +399,30 @@ def esat(T):
     es.convert_units('hPa')
 
     return es
+
+#-------------------
+# 'UTILITY' FUNCTIONS USED ABOVE
+#-------------------
+
+# determine whether to use the cube's pressure coordinate or optional input 'P'
+def _get_pressure(cube, P):
+
+    if not P: # optional P input takes priority
+        try: 
+            pressure = cube.coord(axis='Z')
+        except iris.exceptions.CoordinateNotFoundError:
+            raise ValueError(
+                    'P not set and the input cube does not have a z coordinate')
+    else:
+        pressure = P
+
+    # check pressure is really pressure
+    if not pressure.units.is_convertible('hPa'):
+        raise ValueError(
+                    'Neither P nor the z coordinate in the input cube are a pressure')
+        
+    return pressure
+
 
 # functions to raise 10 to the power of a cube
 def cube_power_10(cube_data):
