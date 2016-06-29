@@ -1,5 +1,6 @@
 Conversions of atmospheric quantities using Iris cubes.
 
+All functions are within IrisMetConversions.convert
 Included functions are:
 
 TEMPERATURE/DENSITY CONVERSIONS
@@ -19,5 +20,5 @@ sh2tdew(SH, T, P=None): Specific humidity to dew point temperature
 mixr2tdew(MIXR, T, P=None): Water vapour mixing ratio to dew point temperature
 esat(T): Saturation pressure
 
-All of the above will use the pressure coordinate of the cube if necessary (and present).
+All of the above will use the pressure coordinate of the cube if it's present and required.
 
