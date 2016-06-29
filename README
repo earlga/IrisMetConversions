@@ -1,1 +1,23 @@
 Conversions of atmospheric quantities using Iris cubes.
+
+Included functions are:
+
+TEMPERATURE/DENSITY CONVERSIONS
+theta2temp(TH, P=None, P0 = 1000.): Potential temperature to temperature
+temp2theta(T, P=None, P0 = 1000.): Temperature to potential temperature
+temp2tvirtual(T, MIXR=None, SH=None): Temperature to virtual temperature
+theta2thvirtual(TH, MIXR=None, SH=None): Potential temperature to virtual potential temperature
+rho(T, P=None, SH=0.): Air density
+
+HUMIDITY CONVERSIONS
+rh2mixr(RH, T, P=None): Relative humidity to water vapour mixing ratio
+mixr2rh(MIXR, T, P=None): Water vapour mixing ratio to relative humidity
+mixr2sh(MIXR): Water vapour mixing ratio to specific humidity
+sh2mixr(SH): Specific humidity to water vapour mixing ratio
+rh2tdew(RH, T): Relative humidity to dew point temperature
+sh2tdew(SH, T, P=None): Specific humidity to dew point temperature
+mixr2tdew(MIXR, T, P=None): Water vapour mixing ratio to dew point temperature
+esat(T): Saturation pressure
+
+All of the above will use the pressure coordinate of the cube if necessary (and present).
+
