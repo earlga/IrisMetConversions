@@ -1,4 +1,5 @@
 Conversions of atmospheric quantities using Iris cubes.
+These are mostly conversions of IDL scripts first developed by Dominik Brunner.
 
 All functions are within IrisMetConversions.convert
 Included functions are:
