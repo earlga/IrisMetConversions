@@ -35,8 +35,8 @@ def theta2temp(TH, P=None, P0 = 1000.):
     try:
         pref.convert_units(pressure.units)
     except ValueError:
-        print 'The z coordinate in theta is not a pressure.'
-        print 'Please include optional parameter p'
+        print('The z coordinate in theta is not a pressure.')
+        print('Please include optional parameter p')
 
     # if p is specified, use iris arithmetic
     if (type(pressure) is iris.cube.Cube):
@@ -80,8 +80,8 @@ def temp2theta(T, P=None, P0 = 1000.):
     try:
         pref.convert_units(pressure.units)
     except ValueError:
-        print 'The z coordinate in T is not a pressure.'
-        print 'Please include optional parameter p'
+        print('The z coordinate in T is not a pressure.')
+        print('Please include optional parameter p')
         
     # if p is specified, use iris arithmetic
     if (type(pressure) is iris.cube.Cube):
@@ -180,8 +180,8 @@ def rho(T, P=None, SH=0.):
 
     # check pressure is really pressure
     if not pressure.units.is_convertible('hPa'):
-            print 'The z coordinate in T not a pressure.'
-            print 'Please include optional parameter p'
+            print('The z coordinate in T not a pressure.')
+            print('Please include optional parameter p')
             return
 
     R = ((-1.*SH + 1) * con.Rd)  + (SH*con.Rv)
@@ -215,8 +215,8 @@ def rh2mixr(RH, T, P=None):
     if P == None:
         pressure = RH.coord(axis='Z')
         if not pressure.units.is_convertible('hPa'):
-            print 'The z coordinate in RH not a pressure.'
-            print 'Please include optional parameter p'
+            print('The z coordinate in RH not a pressure.')
+            print('Please include optional parameter p')
             return
     else: 
         pressure = P
@@ -246,8 +246,8 @@ def mixr2rh(MIXR, T, P=None):
     if P == None:
         pressure = MIXR.coord(axis='Z')
         if not pressure.units.is_convertible('hPa'):
-            print 'The z coordinate in Q is not a pressure.'
-            print 'Please include optional parameter p'
+            print('The z coordinate in Q is not a pressure.')
+            print('Please include optional parameter p')
             return
     else: 
         pressure = P
@@ -369,8 +369,8 @@ def sh2tdew(SH, T, P=None):
     if P == None:
         pressure = SH.coord(axis='Z')
         if not pressure.units.is_convertible('hPa'):
-            print 'The z coordinate in Q is not a pressure.'
-            print 'Please include optional parameter p'
+            print('The z coordinate in Q is not a pressure.')
+            print('Please include optional parameter p')
             return
     else: 
         pressure = P
@@ -398,8 +398,8 @@ def mixr2tdew(MIXR, T, P=None):
     if P == None:
         pressure = MIXR.coord(axis='Z')
         if not pressure.units.is_convertible('hPa'):
-            print 'The z coordinate in Q is not a pressure.'
-            print 'Please include optional parameter p'
+            print('The z coordinate in Q is not a pressure.')
+            print('Please include optional parameter p')
             return
     else: 
         pressure = P
@@ -425,7 +425,7 @@ def esat(T):
 
     # units must be in K. Note the conversion may change the inputted cube
     if (T.units != 'K'): 
-        print 'converting temperature units to Kelvin'
+        print('converting temperature units to Kelvin')
         T.convert_units('K')
 
     TK = iris.coords.AuxCoord(273.15, units='K')
