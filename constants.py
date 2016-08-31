@@ -16,9 +16,9 @@ class constants():
                     long_name='specific heat of water vapour at constant pressure and 300K')
         self.rhod = iris.cube.Cube(1.2, units='kg m**-3',
                     long_name='specific mass of dry air for standard atmosphere')
-        self.Rd = iris.cube.Cube(self.R.data/self.Md.data, units='J kg**-1 K**-1',
+        self.Rd = iris.cube.Cube(self.R.data/self.Md.data, units='J g**-1 K**-1',
                     long_name='specific gas constant for dry air')
-        self.Rv = iris.cube.Cube(self.R.data/self.Mw.data, units='J kg**-1 K**-1',
+        self.Rv = iris.cube.Cube(self.R.data/self.Mw.data, units='J g**-1 K**-1',
                     long_name='specific gas constant for water vapour')
         self.eps = self.Mw/self.Md
         self.eps.long_name= 'ratio of the molecular weights of water and dry air'
