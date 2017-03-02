@@ -388,7 +388,7 @@ def esat(T):
     logTTK.units = '1'
 
 # pwr10(cube) is equivalent to 10**cube
-    pwr10 = im.IFunc(cube_power_10, cube_power_10_unitcheck)
+    pwr10 = im.IFunc(_cube_power_10, _cube_power_10_unitcheck)
 
     es =  e1*pwr10( 10.79586*(1+(-1.*TK*T**-1))-
                     5.02808*logTTK+ 
@@ -425,10 +425,10 @@ def _get_pressure(cube, P):
 
 
 # functions to raise 10 to the power of a cube
-def cube_power_10(cube_data):
+def _cube_power_10(cube_data):
     return 10**(cube_data)
 
-def cube_power_10_unitcheck(cube):
+def _cube_power_10_unitcheck(cube):
     if cube.units != '1':
         raise ValueError("Units must be '1'")
 
