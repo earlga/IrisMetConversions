@@ -55,7 +55,7 @@ def temp2theta(T, P=None, P0 = 1000.):
     '''
     Convert temperature to potential temperature.
 
-    theta = theta2temp(T, p=None, p0=1000.)
+    theta = temp2theta(T, p=None, p0=1000.)
 
     T = cube of temperature.
     P (optional) = cube of pressure (only required if pressure is not a coordinate in T)
