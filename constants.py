@@ -10,7 +10,7 @@ class constants():
                     long_name='molecular weight of dry air')
         self.R = iris.cube.Cube(8.31432, units='J mol**-1 K**-1',
                     long_name='gas constant')
-        self.cpd  = iris.cube.Cube(1005.7, units='J kg**-1 K**-1',
+        self.cpd  = iris.cube.Cube(1.0057, units='J kg**-1 K**-1',
                     long_name='specific heat of dry air at constant pressure')
         self.cpv = iris.cube.Cube(1864., units='J kg**-1 K**-1',
                     long_name='specific heat of water vapour at constant pressure and 300K')
